@@ -82,19 +82,24 @@ def filter_and_validate_sans(common_name: str, sans: list[str]) -> list[str]:
         _sans = [common_name]
 
     # log invalid SANs
-    for san in _sans:
-        # allow wildcard SANs provided base domain is valid
-        if san.split(".")[0] == "*" and domain_validator(san[2:]):
-            continue
-        # log invalid SANs
-        if not domain_validator(san):
-            print(f"Invalid domain {san} excluded from SANs")
+    # for san in _sans:
+    #     # allow wildcard SANs provided base domain is valid
+    #     if san.split(".")[0] == "*" and domain_validator(san[2:]):
+    #         continue
+    #     # log invalid SANs
+    #     if not domain_validator(san):
+    #         print(f"Invalid domain {san} excluded from SANs")
 
     # remove invalid SANs
-    _sans = [s for s in _sans if domain_validator(s) or s.split(".")[0] == "*" and domain_validator(s[2:])]
+    # _sans = [s for s in _sans if domain_validator(s) or s.split(".")[0] == "*" and domain_validator(s[2:])]
+    _sans = [s for s in _sans if check_if_ip_or_domain(s) or s.split(".")[0] == "*" and domain_validator(s[2:])]
 
     return _sans
 
+def check_if_ip_or_domain(value: str) -> bool:
+    if value.replace(".", "").isnumeric():
+        return True
+    return domain_validator(value)
 
 @dataclass
 class CsrInfo:

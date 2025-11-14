@@ -1,6 +1,8 @@
 import random
 import string
 import base64
+import ipaddress
+
 
 from cryptography import x509
 from cryptography.x509.oid import NameOID
@@ -40,7 +42,14 @@ def crypto_cert_request_info(csr_cert, csr_info):
     # convert to x509 cryptography format
     x509_sans = []
     for san in sans:
-        x509_sans.append(x509.DNSName(san))
+        # x509_sans.append(x509.DNSName(san))
+        # Try to parse as IP address first
+        try:
+            ip = ipaddress.ip_address(san)
+            x509_sans.append(x509.IPAddress(ip))
+        except ValueError:
+            # Not an IP, treat as DNS name
+            x509_sans.append(x509.DNSName(san))
 
     return {
         "CommonName": common_name,
