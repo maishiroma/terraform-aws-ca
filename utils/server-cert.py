@@ -63,20 +63,25 @@ def main():  # pylint:disable=too-many-locals,too-many-statements
     session = create_session(args["profile"])
 
     # set variables
-    lifetime = 90
-    common_name = "test.example.com"
-    sans = ["test.example.com", "test2.example.com"]
-    country = "GB"
-    locality = "London"
-    state = "England"
-    organization = "Serverless Inc"
-    organizational_unit = "Security Operations"
+    lifetime = 7300
+    common_name = "dummy.fs.internal"
+    sans = ["dummy.fs.internal"]
+    country = "US"
+    locality = "Los Angeles"
+    state = "California"
+    organization = "Atlas"
+    organizational_unit = "DevOps Team"
     purposes = ["server_auth"]
     output_path_cert_key = f"{base_path}/server-key.pem"
     output_path_cert_pem = f"{base_path}/server-cert.pem"
     output_path_cert_crt = f"{base_path}/server-cert.crt"
     output_path_cert_combined = f"{base_path}/server-cert-key.pem"
-    key_alias = "serverless-tls-keygen-dev"
+    key_alias = "fs-private-ca-tls-keygen-globals"
+    
+    # Needed when explicitly calling Lambda to generate certificates
+    # Since by default, these are set to false
+    notify_expiry = True
+    notify_issued = True
 
     # create key pair using symmetric KMS key to provide entropy
     key_id = kms_get_kms_key_id(key_alias, session=session)
@@ -99,6 +104,8 @@ def main():  # pylint:disable=too-many-locals,too-many-statements
         "base64_csr_data": base64.b64encode(csr_pem).decode("utf-8"),
         "force_issue": True,
         "cert_bundle": True,
+        "notify_expiry": notify_expiry,
+        "notify_issued": notify_issued,
     }
 
     request_payload_bytes = json.dumps(request_payload)
